@@ -1,5 +1,3 @@
-
-
 import torch
 import torch.nn as nn
 
@@ -24,11 +22,15 @@ class BrainPreCheckModel(nn.Module):
     def __init__(self):
         super(BrainPreCheckModel, self).__init__()
 
-        # Backbone EfficientNet-B0 (pretrained ImageNet)
+        # Backbone EfficientNet-B0. weights=None (TIDAK download ImageNet
+        # pretrained) karena bobotnya akan langsung ditimpa total oleh
+        # load_state_dict() dari checkpoint hasil training kita sendiri
+        # (best_precheck_model.pth) di api.py. Download ImageNet di sini
+        # cuma buang-buang bandwidth & RAM saat startup, dan jadi penyebab OOM.
         if HAS_WEIGHTS:
-            self.backbone = efficientnet_b0(weights=EfficientNet_B0_Weights.DEFAULT)
+            self.backbone = efficientnet_b0(weights=None)
         else:
-            self.backbone = efficientnet_b0(pretrained=True)
+            self.backbone = efficientnet_b0(pretrained=False)
 
         # EfficientNet-B0 classifier bawaan: Sequential(Dropout, Linear(1280, 1000))
         in_features = self.backbone.classifier[1].in_features  # 1280
