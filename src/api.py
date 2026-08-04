@@ -80,7 +80,7 @@ try:
         if _load_pth_weights(precheck_model, precheck_pth):
             print(f"Sukses memuat Precheck dari: {precheck_pth}")
     else:
-        print("Warning: best_precheck_model.pth tidak ditemukan, menggunakan bobot pretrained bawaan.")
+        print("Warning: best_precheck_model.pth tidak ditemukan, model memakai bobot acak (belum ter-training).")
     precheck_model.eval()
 
     print("Memuat model Hybrid (.pth)...")
@@ -93,7 +93,7 @@ try:
         if _load_pth_weights(hybrid_model, hybrid_pth):
             print(f"Sukses memuat Hybrid dari: {hybrid_pth}")
     else:
-        print("Warning: hybrid_vit_efficientnet_brain_best.pth tidak ditemukan, menggunakan bobot pretrained bawaan.")
+        print("Warning: hybrid_vit_efficientnet_brain_best.pth tidak ditemukan, model memakai bobot acak (belum ter-training).")
     hybrid_model.eval()
 
     print("Seluruh model AI berhasil dimuat.")
