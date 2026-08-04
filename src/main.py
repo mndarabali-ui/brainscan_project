@@ -1,13 +1,47 @@
+import os
+
 from fastapi import FastAPI
 from fastapi.staticfiles import StaticFiles
-from fastapi.responses import FileResponse
+from fastapi.middleware.cors import CORSMiddleware
 
-app = FastAPI()
+from src.api import router as api_router
+from src.config import OUTPUT_DIR
 
-# serve folder src/static sebagai /static
-app.mount("/static", StaticFiles(directory="static"), name="static")
+app = FastAPI(
+    title="BrainScan AI Framework API",
+    description="API untuk analisis otomatis CT-Scan & MRI",
+    version="1.0",
+)
 
-# root "/" tampilkan UI
-@app.get("/")
-def home():
-    return FileResponse("static/index.html")
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["*"],
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
+
+os.makedirs(os.path.join(OUTPUT_DIR, "figures"), exist_ok=True)
+os.makedirs("temp_uploads", exist_ok=True)
+
+# API harus didaftarkan dulu
+app.include_router(api_router)
+
+@app.get("/health")
+def health():
+    return {"status": "ok"}
+
+# Untuk akses hasil heatmap
+app.mount(
+    "/outputs/figures",
+    StaticFiles(directory=os.path.join(OUTPUT_DIR, "figures")),
+    name="figures",
+)
+
+# UI frontend dari folder src/static
+# Ini harus paling bawah
+app.mount(
+    "/",
+    StaticFiles(directory="src/static", html=True),
+    name="static",
+)
