@@ -27,7 +27,11 @@ EPOCHS      = 30
 #   setx GEMINI_API_KEY "isi-key-anda"           (Windows)
 # Jika tidak di-set, sistem otomatis memakai generator laporan lokal (fallback)
 # di gemini_client.py — jadi aplikasi tetap berjalan tanpa Gemini API.
-GEMINI_API_KEY = os.environ.get("GEMINI_API_KEY", "")
+GEMINI_API_KEY = (
+    os.environ.get("GEMINI_API_KEY")
+    or os.environ.get("GEMINIAPIKEY")
+    or ""
+)
 
 # ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 #  KELAS PENYAKIT OTAK (5 KELAS)
