@@ -12,3 +12,4 @@ pillow
 fpdf2
 google-generativeai
 huggingface_hub
+libsql-client
