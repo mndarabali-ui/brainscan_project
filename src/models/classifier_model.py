@@ -1,4 +1,3 @@
-
 import logging
 import torch
 import torch.nn as nn
@@ -130,11 +129,16 @@ class BrainHybridModel(nn.Module):
                  freeze_backbone: bool = True):
         super().__init__()
 
-        # 1. CNN backbone (EfficientNet-B3)
+        # 1. CNN backbone (EfficientNet-B3). weights=None (TIDAK download
+        # ImageNet pretrained) karena bobotnya akan langsung ditimpa total
+        # oleh load_state_dict() dari checkpoint hasil training kita sendiri
+        # (best_hybrid_model.pth / best_model.pth) di api.py. Download
+        # ImageNet di sini cuma buang-buang bandwidth & RAM saat startup,
+        # dan jadi penyebab OOM di server produksi.
         if HAS_WEIGHTS:
-            backbone = efficientnet_b3(weights=EfficientNet_B3_Weights.DEFAULT)
+            backbone = efficientnet_b3(weights=None)
         else:
-            backbone = efficientnet_b3(pretrained=True)
+            backbone = efficientnet_b3(pretrained=False)
         self.features = backbone.features
         self.cnn_out = 1536
 
