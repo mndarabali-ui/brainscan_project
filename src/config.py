@@ -74,7 +74,7 @@ CHECKPOINT_DIR     = OUTPUT_DIR / "checkpoints"
 # - HFREPOID     untuk FastAPI Cloud kalau underscore tidak diterima
 HF_REPO_ID = (
     os.environ.get("HF_REPO_ID")
-    or os.environ.get("HFREPOID")
+    or os.environ.get("hfrepoid")
     or "Marksnb/brain-hybrid-efficientnet-vit"
 )
 
