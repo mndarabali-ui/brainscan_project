@@ -18,15 +18,11 @@ LR          = 5e-5
 EPOCHS      = 30
 
 # ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-#  GEMINI API KEY — WAJIB di-set lewat environment variable, JANGAN ditulis di sini
+#  GEMINI API KEY
 # ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-# Jangan pernah taruh API key asli langsung di source code (apalagi yang ikut
-# ter-commit ke git / ter-share ke orang lain) — siapa pun yang membaca file
-# ini bisa memakai kuota/API key milik Anda. Set lewat environment variable:
-#   export GEMINI_API_KEY="isi-key-anda"        (Linux/Mac)
-#   setx GEMINI_API_KEY "isi-key-anda"           (Windows)
-# Jika tidak di-set, sistem otomatis memakai generator laporan lokal (fallback)
-# di gemini_client.py — jadi aplikasi tetap berjalan tanpa Gemini API.
+# Bisa pakai:
+# - GEMINI_API_KEY   untuk local/server biasa
+# - GEMINIAPIKEY     untuk FastAPI Cloud kalau underscore tidak diterima
 GEMINI_API_KEY = (
     os.environ.get("GEMINI_API_KEY")
     or os.environ.get("GEMINIAPIKEY")
@@ -45,11 +41,11 @@ CLASSES = [
 ]
 
 CLASS_DISPLAY = {
-    "Alzheimer":               "Alzheimer",
+    "Alzheimer": "Alzheimer",
     "Intracranial_Hemorrhage": "ICH",
-    "Normal":                  "Normal",
-    "Stroke_Iskemik":          "Ischemic Stroke",
-    "Tumor":                   "Brain Tumor",
+    "Normal": "Normal",
+    "Stroke_Iskemik": "Ischemic Stroke",
+    "Tumor": "Brain Tumor",
 }
 
 CLASS_COLORS = ["#4E79A7", "#F28E2B", "#59A14F", "#E15759", "#B07AA1"]
@@ -57,7 +53,6 @@ CLASS_COLORS = ["#4E79A7", "#F28E2B", "#59A14F", "#E15759", "#B07AA1"]
 # ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 #  STRUKTUR DIREKTORI PROYEK
 # ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-# Posisi src/config.py adalah di proyek/src/, maka parent-nya adalah root proyek.
 BASE_DIR = Path(__file__).resolve().parent.parent
 
 # ── Data Directories ──────────────────────────────────────────────────────
@@ -71,26 +66,39 @@ SPLITS_DIR         = DATA_DIR / "splits"
 OUTPUT_DIR         = BASE_DIR / "outputs"
 CHECKPOINT_DIR     = OUTPUT_DIR / "checkpoints"
 
-# ── Hugging Face Model Repo ────────────────────────────────────────────
-HF_REPO_ID = "Marksnb/brain-hybrid-efficientnet-vit"
+# ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+#  HUGGING FACE MODEL REPO
+# ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+# Bisa pakai:
+# - HF_REPO_ID   untuk local/server biasa
+# - HFREPOID     untuk FastAPI Cloud kalau underscore tidak diterima
+HF_REPO_ID = (
+    os.environ.get("HF_REPO_ID")
+    or os.environ.get("HFREPOID")
+    or "Marksnb/brain-hybrid-efficientnet-vit"
+)
 
 def download_model_from_hf(filename: str):
     """
-    Download file .pth dari Hugging Face Hub kalau belum ada lokal.
-    Kalau gagal (file nggak ada di repo, dll) return None supaya
-    main.py bisa fallback ke perilaku lama (pakai bobot pretrained).
+    Download file model dari Hugging Face Hub kalau belum ada lokal.
+    Kalau gagal, return None supaya aplikasi bisa fallback.
     """
     from huggingface_hub import hf_hub_download
+
     local_path = CHECKPOINT_DIR / filename
+
     if local_path.exists():
         return str(local_path)
+
     try:
         os.makedirs(CHECKPOINT_DIR, exist_ok=True)
+
         return hf_hub_download(
             repo_id=HF_REPO_ID,
             filename=filename,
             local_dir=str(CHECKPOINT_DIR),
         )
+
     except Exception as e:
         print(f"⚠️ Gagal download '{filename}' dari Hugging Face: {e}")
         return None
@@ -105,7 +113,7 @@ TRAINING_LOG_FILE    = LOGS_DIR        / "training.log"
 SPLITS_CSV_FILE      = SPLITS_DIR      / "train_val_test.csv"
 BEST_MODEL_PATH      = CHECKPOINT_DIR  / "hybrid_vit_efficientnet_brain_best.pth"
 
-# ─── Output Figures (nama file sesuai spesifikasi) ────────────────────────
+# ─── Output Figures ───────────────────────────────────────────────────────
 FIG_TRAINING_PERF      = FIGURES_DIR / "training_performance.png"
 FIG_CONFUSION_MATRIX   = FIGURES_DIR / "confusion_matrix.png"
 FIG_TRAINING_SUMMARY   = FIGURES_DIR / "training_summary.png"
@@ -117,22 +125,16 @@ TABLE_CLASSIF_REPORT   = TABLES_DIR  / "classification_report.csv"
 TABLE_DATASET_DIST     = TABLES_DIR  / "dataset_distribution.csv"
 TABLE_TRAINING_HISTORY = TABLES_DIR  / "training_history.csv"
 TABLE_TEST_EVAL        = TABLES_DIR  / "test_evaluation_results.csv"
-REPORT_AUDIT_SUMMARY = REPORTS_DIR / "audit_summary.json"
+REPORT_AUDIT_SUMMARY   = REPORTS_DIR / "audit_summary.json"
 
 # ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 #  MODE TRAINING
 # ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-# QUICK_TEST=True  -> cuma proses 2 batch/epoch, buat tes cepat pipeline jalan/tidak
-# QUICK_TEST=False -> training penuh pakai seluruh data asli (WAJIB False untuk hasil final)
 QUICK_TEST = False
 
 # ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-#  TARGET AUGMENTASI (class balancing)
+#  TARGET AUGMENTASI
 # ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-# Target jumlah sampel TRAIN per kelas setelah augmentasi offline.
-# Total akhir = AUGMENT_TARGET_PER_CLASS x NUM_CLASSES -- TAPI HANYA kalau
-# semua kelas raw < target ini. Kelas yang raw-nya sudah >= target TIDAK
-# dikurangi/dipotong (augment.py cuma menambah, tidak pernah membuang data).
 AUGMENT_TARGET_PER_CLASS = 19097
 
 # ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
@@ -153,20 +155,6 @@ def init_folders() -> None:
         TABLES_DIR,
         REPORTS_DIR,
     ]
+
     for d in all_dirs:
         os.makedirs(d, exist_ok=True)
-
-
-if __name__ == "__main__":
-    init_folders()
-    print("=" * 60)
-    print("  Modul Konfigurasi Terpusat (config.py)")
-    print("=" * 60)
-    print(f"  Root proyek : {BASE_DIR}")
-    print(f"  SEED        : {SEED}")
-    print(f"  IMG_SIZE    : {IMG_SIZE}")
-    print(f"  BATCH_SIZE  : {BATCH_SIZE}")
-    print(f"  NUM_CLASSES : {NUM_CLASSES}")
-    print(f"  EPOCHS      : {EPOCHS}")
-    print("  Struktur folder berhasil diperiksa/dibuat.")
-    print("=" * 60)
