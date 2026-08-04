@@ -9,22 +9,25 @@ Berisi:
 """
 
 import os
-import cv2
 import logging
 import warnings
-import pandas as pd
 from pathlib import Path
 
-import numpy as np
-import matplotlib
-matplotlib.use("Agg")
-import matplotlib.pyplot as plt
 import torchvision.transforms as T
 
 from src.config import (
     IMG_SIZE, CLASSES, CLASS_DISPLAY, CLASS_COLORS, FIGURES_DIR,
     DATA_DIR, SPLITS_DIR,
 )
+
+# NOTE: cv2, pandas, numpy, dan matplotlib SENGAJA tidak di-import di sini
+# (top-level). Library ini berat (ratusan MB - >1GB kalau digabung) dan
+# hanya dipakai oleh fungsi-fungsi training/plotting (plot_preprocessing_distribution,
+# run_cropping_pipeline, crop_brain_contour) yang TIDAK dijalankan saat API
+# production start. Kalau di-import di top-level, mereka ikut ke-load ke RAM
+# begitu modul ini di-import (termasuk lewat val_transforms/precheck_transforms
+# yang memang dibutuhkan API), dan itu penyebab OOM di server.
+# Import-nya dipindah ke DALAM masing-masing fungsi yang memakainya.
 
 warnings.filterwarnings("ignore")
 logger = logging.getLogger("brain_pipeline")
@@ -111,6 +114,11 @@ def plot_preprocessing_distribution(train_df_before, train_df_after):
     data/raw/ asli) vs SESUDAH augmentasi offline sungguhan (train_df_after,
     hasil nyata dari augment.run_augmentation() -- bukan proyeksi/estimasi).
     """
+    import numpy as np
+    import matplotlib
+    matplotlib.use("Agg")
+    import matplotlib.pyplot as plt
+
     COLOR_CT = "#E15759"
     COLOR_MRI = "#4E79A7"
 
@@ -193,6 +201,8 @@ def crop_brain_contour(img):
     Mendeteksi area scan otak sirkular di dalam gambar dan memotong (crop)
     area luar seperti taskbar desktop, bingkai window, atau ruang hitam berlebih.
     """
+    import cv2
+
     if img is None:
         return None
         
@@ -232,6 +242,9 @@ def crop_brain_contour(img):
 
 
 def run_cropping_pipeline():
+    import cv2
+    import pandas as pd
+
     processed_dir = DATA_DIR / "processed"
     os.makedirs(processed_dir, exist_ok=True)
     
