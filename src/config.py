@@ -25,7 +25,7 @@ EPOCHS      = 30
 # - GEMINIAPIKEY     untuk FastAPI Cloud kalau underscore tidak diterima
 GEMINI_API_KEY = (
     os.environ.get("GEMINI_API_KEY")
-    or os.environ.get("GEMINIAPIKEY")
+    or os.environ.get("geminiapikey")
     or ""
 )
 
